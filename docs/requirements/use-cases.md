@@ -927,7 +927,7 @@ The course admin shall be able to cancel the use case at any time prior to submi
 - **4e. A student has no team or a deactivated account:**
   - 4e1. The system shows the student separately as "Cannot submit," with the reason (BR-reminder-eligibility). Continue for other students.
 - **4f. The reminder window is closed, the course section is inactive, or due-date settings are missing:**
-  - 4f1. The system shows the missing item and reason, but prevent selection (BR-evaluation-submission-window, BR-reminder-eligibility). Continue for eligible students.
+  - 4f1. The system shows the missing item and reason, but prevents selection (BR-evaluation-submission-window, BR-reminder-eligibility). Continue for eligible students.
 - **4g. No students are eligible:**
   - 4g1. The system explains whether everyone submitted or the remaining students are ineligible. Send nothing. Use case ends.
 - **6a. The instructor only reviews the list, cancels, or selects nobody:**
@@ -940,6 +940,8 @@ The course admin shall be able to cancel the use case at any time prior to submi
   - 7c1. The system records failed or unknown under BR-reminder-frequency, without automatic retry. Continue with the next student.
 - **7d. A required recheck or attempt record fails:**
   - 7d1. The system sends nothing to that student, records the failure, and continues. If results cannot be recorded, stop and report that the request could not finish.
+- **7e. An email was sent but its result cannot be saved:**
+  - 7e1. The system retains the recorded attempt, reports an unknown outcome, and stops remaining sends without automatic retry. BR-reminder-frequency governs any later attempt.
 
 **Priority:** High
 **Frequency of Use:** Once or twice weekly per course section.
