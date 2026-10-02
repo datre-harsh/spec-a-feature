@@ -887,6 +887,88 @@ The course admin shall be able to cancel the use case at any time prior to submi
 **Assumptions:**
 **Open Issues:**
 
+### **UC-SEC-remind-missing-submissions: The instructor reminds students about missing submissions**
+
+**UC ID and Name:** UC-SEC-remind-missing-submissions: Remind students about missing submissions
+**Created By:** Harsh Datre
+**Date Created:** 02/Oct/2026
+**Primary Actor:** instructor
+**Secondary Actors:** student, email service
+**Trigger:** The instructor chooses to check submissions for a course section.
+**Description:** The instructor wants to see who still needs to submit so that she can decide who needs a reminder.
+
+**Preconditions:**
+- PRE-1. The instructor is logged in and has access to a course section under BR-section-scoped-access.
+
+**Postconditions:**
+- POST-1. After a successful check, the instructor sees missing submissions and students who cannot submit.
+- POST-2. Requested reminders have individual results, or the instructor is told the request could not finish. Work, grades, and submission windows remain unchanged.
+
+**Main Success Scenario:**
+1. The instructor chooses to check submissions for a course section.
+2. The system asks for the course section, reporting week, and submission type.
+3. The instructor selects the parameters in Associated Information.
+4. The system validates access and the parameters, then displays missing submissions and reminder eligibility under BR-reminder-submission-status and BR-reminder-eligibility.
+5. The instructor selects students to remind.
+6. The system shows the recipients, submission type, week, and due date. The instructor confirms.
+7. Before each email, the system rechecks access, enrollment, submission status, and the reminder rules. It emails selected students who still qualify.
+8. The system records and displays the results.
+9. The instructor acknowledges the results. Use case ends.
+
+**Extensions:**
+- **4a. The caller is a student or lacks course section access:**
+  - 4a1. The system refuses access without disclosing student details or counts (BR-role-based-access, BR-section-scoped-access, BR-team-scoped-access). Use case ends.
+- **4b. The week is invalid, future, or outside the course section's dates:**
+  - 4b1. The system identifies the error. The instructor corrects it and returns to step 3.
+- **4c. The reporting week is inactive:**
+  - 4c1. The system shows no reminder recipients under BR-active-weeks and BR-reminder-eligibility. The instructor chooses another week or ends the use case.
+- **4d. Submission records cannot be read:**
+  - 4d1. The system reports that the check failed; unreadable records must not count as missing submissions. Send nothing. Use case ends.
+- **4e. A student has no team or a deactivated account:**
+  - 4e1. The system shows the student separately as "Cannot submit," with the reason (BR-reminder-eligibility). Continue for other students.
+- **4f. The reminder window is closed, the course section is inactive, or due-date settings are missing:**
+  - 4f1. The system shows the missing item and reason, but prevents selection (BR-evaluation-submission-window, BR-reminder-eligibility). Continue for eligible students.
+- **4g. No students are eligible:**
+  - 4g1. The system explains whether everyone submitted or the remaining students are ineligible. Send nothing. Use case ends.
+- **6a. The instructor only reviews the list, cancels, or selects nobody:**
+  - 6a1. The system sends nothing. Return to step 5 or end the use case.
+- **7a. A student submits, deletes work, becomes ineligible, or was already reminded:**
+  - 7a1. The system applies BR-reminder-submission-status, BR-reminder-eligibility, and BR-reminder-frequency again. Record skipped students and reasons, including the next allowed reminder time. Continue with the next student; never add unselected recipients or types.
+- **7b. The instructor loses access:**
+  - 7b1. The system stops remaining sends and discloses no further student details. Use case ends.
+- **7c. Email is rejected or its outcome is uncertain:**
+  - 7c1. The system records failed or unknown under BR-reminder-frequency, without automatic retry. Continue with the next student.
+- **7d. A required recheck or attempt record fails:**
+  - 7d1. The system sends nothing to that student, records the failure, and continues. If results cannot be recorded, stop and report that the request could not finish.
+- **7e. An email was sent but its result cannot be saved:**
+  - 7e1. The system retains the recorded attempt, reports an unknown outcome, and stops remaining sends without automatic retry. BR-reminder-frequency governs any later attempt.
+
+**Priority:** High
+**Frequency of Use:** Once or twice weekly per course section.
+**Business Rules:** BR-role-based-access, BR-section-scoped-access, BR-team-scoped-access, BR-team-assignment-required, BR-student-lifecycle, BR-active-weeks, BR-evaluation-submission-window, BR-evaluation-editable-until-close, BR-evaluation-private-comment, BR-reminder-submission-status, BR-reminder-eligibility, BR-reminder-frequency, BR-reminder-privacy
+
+**Associated Information:**
+
+| Input/output | Details |
+| --- | --- |
+| Course section | Required; check access even for a directly supplied identifier. |
+| Reporting week | Required ISO week key; defaults to the previous week in the application's time zone. Must overlap course section dates and cannot be future. Use the ISO week-based year. |
+| Submission type | Required: weekly activity report or peer evaluation. Check one type per request. |
+| Missing list | Student identifier, name, team, status, eligibility, due date, last accepted reminder, and any pending attempt or blocking reason. Omit submitted students; list "Cannot submit" students separately. |
+| Recipients | Explicitly selected eligible students; none selected automatically. |
+| Due date | The type's configured day/time in the week after the reporting week, with time zone. Label past deadlines overdue and missing settings as a configuration problem. |
+| Results | Count each selected student once: sent (service accepted), skipped (ineligible), failed (check/send failed), or unknown (acceptance uncertain). Show reasons. |
+
+Emails identify the course section, reporting week, chosen type, due date, and authenticated submission link. Follow CI-email-notifications, CO-ferpa, and BR-reminder-privacy. Acceptance does not prove inbox delivery.
+
+The list uses current enrollment and team membership, even for past weeks. A submission after the final check may cross with an email already being sent; that email cannot be recalled.
+
+"Send scheduled reminders for missing submissions" is a separate flow. It retains the existing schedule and enable/disable setting, applies the same BR-reminder-* rules, and checks only types due that day. Both missing types may share one personal email.
+
+**Related Use Cases:** UC-WAR-manage-activities; UC-EVA-submit-evaluation; UC-SEC-setup-active-weeks.
+**Assumptions:** Saved records passed normal submission validation. This check does not grade their content.
+**Open Issues:** FR-NOT-weekly-reminder's universal-recipient wording and traceability entries need follow-up outside this assignment's two-file change.
+
 ## **Team**
 
 ### **UC-TEA-find-teams: The course admin/instructor finds teams**
